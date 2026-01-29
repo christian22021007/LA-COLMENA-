@@ -1,469 +1,177 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>LA COLMENA</title>
+  <meta charset="UTF-8">
+  <title>LA COLMENA</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background: #f5f5f5;
+    }
 
-<!-- ICONO PARA AÑADIR A PANTALLA DE INICIO (ANDROID - CHROME) -->
-<link rel="icon" type="image/png" href="logo.png">
-<link rel="shortcut icon" href="logo.png">
+    #productList {
+      max-height: 80vh;
+      overflow-y: auto;
+      border: 1px solid #ddd;
+      padding: 10px;
+      background: #fff;
+      border-radius: 8px;
+    }
 
-<!-- ICONO PARA iPHONE / iPAD (iOS) -->
-<link rel="apple-touch-icon" href="logo.png">
+    .product-item {
+      padding: 10px 0;
+      border-bottom: 1px solid #eee;
+    }
 
-<!-- CONFIGURACIÓN DE COLOR DEL NAVEGADOR EN ANDROID -->
-<meta name="theme-color" content="#ffffff">
+    .product-item:last-child {
+      border-bottom: none;
+    }
 
-<!-- NOMBRE QUE APARECE AL AÑADIR A INICIO -->
-<meta name="apple-mobile-web-app-title" content="LA COLMENA">
-<meta name="application-name" content="LA COLMENA">
+    .product-meta {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
 
-<!-- PERMITIR MODO APP AL AGREGAR A INICIO -->
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="mobile-web-app-capable" content="yes">
+    .product-meta img {
+      width: 60px;
+      height: 60px;
+      object-fit: contain;
+      border-radius: 8px;
+      border: 1px solid #eee;
+      background: #fff;
+      cursor: pointer;
+    }
 
-<style>
-  :root{--accent:#f7c84f;--bg:#fffdf6;--muted:#555;}
-  body{font-family:Arial,system-ui,sans-serif;background:var(--bg);margin:0;padding:16px;color:#111}
-  header{background:var(--accent);padding:14px;border-radius:8px;text-align:center;font-weight:800}
-  h1{margin:0;font-size:20px;color:red} /* Letras rojas */
-  .layout{display:flex;gap:16px;margin-top:12px}
-  .left{flex:1;min-width:260px}
-  .right{width:360px;position:relative}
-  .search{display:flex;gap:8px;margin-bottom:8px}
-  input[type="search"], input[type="text"], input[type="tel"]{flex:1;padding:8px;border-radius:8px;border:1px solid #e3d99a}
-  button{background:var(--accent);border:none;padding:8px 10px;border-radius:8px;color:#000;font-weight:700;cursor:pointer}
-  .product-list{background:#fff;padding:10px;border-radius:8px;max-height:60vh;overflow:auto;border:1px solid #f0e7b0}
-  .product-item{display:flex;justify-content:space-between;align-items:center;padding:8px;border-bottom:1px solid #f3f0d6}
-  .product-meta{max-width:72%}
-  .small{font-size:12px;color:var(--muted)}
-  .cart{background:#fff;padding:10px;border-radius:8px;border:1px solid #f0e7b0;max-height:60vh;overflow:auto}
-  .cart-item{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px dashed #eee}
-  .qty-controls button{padding:4px 8px;margin-left:6px}
-  #mayoreoNotice{background:#e6f8ed;color:#0a7a2f;padding:8px;border-radius:6px;font-weight:700;margin-bottom:8px;display:none}
-  .totals{margin-top:8px;text-align:right;font-weight:800}
-  .footer{margin-top:12px;text-align:center;color:var(--muted);font-size:13px}
-  .strike { text-decoration: line-through; color: #a00; margin-right:6px; }
-  @media(max-width:900px){.layout{flex-direction:column}.right{width:auto}}
-</style>
+    .small {
+      font-size: 0.85em;
+      color: #555;
+    }
+
+    .product-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    button {
+      padding: 5px 10px;
+      border-radius: 6px;
+      border: none;
+      background: #ff9800;
+      color: #fff;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #e68900;
+    }
+
+    input[type="number"] {
+      width: 60px;
+      padding: 5px;
+      border-radius: 6px;
+      border: 1px solid #eee;
+    }
+
+    /* Modal */
+    #imageModal {
+      display: none;
+      position: fixed;
+      top:0;
+      left:0;
+      width:100%;
+      height:100%;
+      background: rgba(0,0,0,0.8);
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      cursor: pointer;
+    }
+
+    #modalImg {
+      max-width: 90%;
+      max-height: 90%;
+      border-radius: 10px;
+      box-shadow: 0 0 15px #000;
+    }
+  </style>
 </head>
 <body>
-<header style="
-  width:100%;
-  height:700px;
-  background:url('logo.png') center/contain no-repeat #f7c84f;
-  border-radius:8px;
-">
-</header>
 
+<h1>Productos - LA COLMENA</h1>
+<div id="productList"></div>
 
-
-
-
-
-
-
-
-
-
-
-<div style="margin-top:12px">
-  <div style="display:flex;gap:8px;flex-wrap:wrap">
-    <input id="clientName" type="text" placeholder="Nombre del cliente" style="flex:1;min-width:160px" />
-    <input id="clientAddress" type="text" placeholder="Domicilio (opcional)" style="flex:1;min-width:160px" />
-    <input id="clientPhone" type="tel" placeholder="Teléfono" style="width:160px" />
-  </div>
-
-  <div style="margin:8px 0;display:flex;gap:8px;align-items:center">
-    <input id="clientCode" type="text" placeholder="Código de cliente para MAYOREO" style="flex:1;min-width:160px" />
-    <button id="checkCodeBtn">Aplicar código</button>
-  </div>
-
-  <p style="margin:8px 0">Folio: <span id="folioSpan">1</span> | Fecha: <span id="dateSpan"></span></p>
-</div>
-
-<div class="layout">
-  <div class="left">
-    <div class="search">
-      <input id="search" type="search" placeholder="Buscar producto (ej. miel, toper, 1 kg...)" />
-      <button id="clearSearch">X</button>
-    </div>
-
-    <div class="product-list" id="productList" aria-live="polite"></div>
-
-    <div style="margin-top:10px;display:flex;gap:8px">
-      <button id="sendWhats">Enviar por WhatsApp</button>
-      <button id="clearCartBtn" style="background:#eee">Vaciar carrito</button>
-    </div>
-  </div>
-
-  <div class="right">
-    <div id="mayoreoNotice">🟢 Estás comprando en mayoreo</div>
-    <div class="cart" id="cart"></div>
-    <div class="totals" id="totalDiv">Total: $0.00</div>
-  </div>
-</div>
-
-<div class="footer">
-  <small>Tel: 3313311304 • 3318553688 — WhatsApp • La Colmena</small>
+<!-- Modal para ampliar imagen -->
+<div id="imageModal">
+  <img id="modalImg" src="">
 </div>
 
 <script>
-function money(v){ return '$' + Number(v).toFixed(2); }
+  // Array de productos
+  const products = [
+    { nombre: "CALENDULA con propoleo spray 60 ml.", precioMenudeo: 80.00, precioMayoreo: 35.00, imagen: "https://github.com/christian22021007/LA-COLMENA-/raw/main/calendula.jpg" },
+    { nombre: "CHOCHO VERDE", precioMenudeo: 120.00, precioMayoreo: 100.00, imagen: "https://github.com/christian22021007/LA-COLMENA-/raw/main/chochoverde.jpeg" },
+    { nombre: "COLMENNECTAR", precioMenudeo: 90.00, precioMayoreo: 75.00, imagen: "https://github.com/christian22021007/LA-COLMENA-/raw/main/colmenectar.jpeg" },
+    { nombre: "COLMETOX", precioMenudeo: 150.00, precioMayoreo: 120.00, imagen: "https://github.com/christian22021007/LA-COLMENA-/raw/main/colmetox.jpeg" },
+    { nombre: "COLMETOX FORTE", precioMenudeo: 180.00, precioMayoreo: 150.00, imagen: "https://github.com/christian22021007/LA-COLMENA-/raw/main/colmetoxforte.jpeg" },
+    { nombre: "CREMA", precioMenudeo: 60.00, precioMayoreo: 50.00, imagen: "https://github.com/christian22021007/LA-COLMENA-/raw/main/crema.jpg" },
+    { nombre: "JALEA REAL 10g", precioMenudeo: 40.00, precioMayoreo: 35.00, imagen: "https://github.com/christian22021007/LA-COLMENA-/raw/main/jaleareal10.jpeg" },
+    { nombre: "JALEA REAL 20g", precioMenudeo: 70.00, precioMayoreo: 60.00, imagen: "https://github.com/christian22021007/LA-COLMENA-/raw/main/jaleareal20.jpeg" },
+    { nombre: "JALEA REAL 50g", precioMenudeo: 150.00, precioMayoreo: 120.00, imagen: "https://github.com/christian22021007/LA-COLMENA-/raw/main/jaleareal50.jpeg" },
+    { nombre: "JARABE PREMIUM", precioMenudeo: 100.00, precioMayoreo: 85.00, imagen: "https://github.com/christian22021007/LA-COLMENA-/raw/main/jarabepremium.jpeg" },
+    { nombre: "JUGO MAGUEY", precioMenudeo: 80.00, precioMayoreo: 70.00, imagen: "https://github.com/christian22021007/LA-COLMENA-/raw/main/jugomaguey.jpeg" },
+    { nombre: "MIEL AGAVE 250g", precioMenudeo: 90.00, precioMayoreo: 80.00, imagen: "https://github.com/christian22021007/LA-COLMENA-/raw/main/mielagave250.jpeg" },
+    { nombre: "MIEL AGAVE 500g", precioMenudeo: 160.00, precioMayoreo: 140.00, imagen: "https://github.com/christian22021007/LA-COLMENA-/raw/main/mielagave500.jpeg" },
+    { nombre: "MIEL MAGUEY 250g", precioMenudeo: 95.00, precioMayoreo: 80.00, imagen: "https://github.com/christian22021007/LA-COLMENA-/raw/main/mielmaguey250.jpeg" },
+    { nombre: "MIEL PROPOLEO", precioMenudeo: 100.00, precioMayoreo: 85.00, imagen: "https://github.com/christian22021007/LA-COLMENA-/raw/main/mielpropoleo.jpeg" },
+    { nombre: "NATURACTIVA 250g", precioMenudeo: 80.00, precioMayoreo: 70.00, imagen: "https://github.com/christian22021007/LA-COLMENA-/raw/main/naturactiva250.jpeg" },
+    { nombre: "NATURACTIVA 500g", precioMenudeo: 150.00, precioMayoreo: 130.00, imagen: "https://github.com/christian22021007/LA-COLMENA-/raw/main/naturactiva500.jpeg" },
+    { nombre: "POLEN 170g", precioMenudeo: 50.00, precioMayoreo: 40.00, imagen: "https://github.com/christian22021007/LA-COLMENA-/raw/main/polen170.jpeg" },
+    { nombre: "POMADA", precioMenudeo: 70.00, precioMayoreo: 60.00, imagen: "https://github.com/christian22021007/LA-COLMENA-/raw/main/pomada.jpeg" },
+    { nombre: "PROPOLEO GOTAS", precioMenudeo: 60.00, precioMayoreo: 50.00, imagen: "https://github.com/christian22021007/LA-COLMENA-/raw/main/propoleogotas.jpeg" },
+    { nombre: "TILA", precioMenudeo: 30.00, precioMayoreo: 25.00, imagen: "https://github.com/christian22021007/LA-COLMENA-/raw/main/tila.jpeg" }
+  ];
 
-/* --- LISTA COMPLETA DE PRODUCTOS --- */
-const products = [
-  { nombre: "MIEL DE ABEJA a granel 1 kg", precioMenudeo: 135.00, precioMayoreo: 75.00 },
-  { nombre: "MIEL DE ABEJA toper 1/4", precioMenudeo: 60.00, precioMayoreo: 31.00 },
-  { nombre: "MIEL DE ABEJA toper de 1/2", precioMenudeo: 110.00, precioMayoreo: 60.00 },
-  { nombre: "MIEL DE ABEJA toper 1 lt.", precioMenudeo: 200.00, precioMayoreo: 110.00 },
-  { nombre: "MIEL DE ABEJA lacteo 250 ml.", precioMenudeo: 65.00, precioMayoreo: 34.00 },
-  { nombre: "MIEL DE ABEJA vidrio 250 ml.", precioMenudeo: 90.00, precioMayoreo: 45.00 },
-  { nombre: "MIEL DE ABEJA vidrio 500 ml.", precioMenudeo: 150.00, precioMayoreo: 80.00 },
-  { nombre: "MIEL DE ABEJA vidrio 1.300 kg.", precioMenudeo: 225.00, precioMayoreo: 125.00 },
-  { nombre: "MIEL DE ABEJA pet red. 250 ml.", precioMenudeo: 65.00, precioMayoreo: 34.00 },
-  { nombre: "MIEL DE ABEJA pet red. 480 ml.", precioMenudeo: 115.00, precioMayoreo: 60.00 },
-  { nombre: "MIEL DE ABEJA pet red. 500 ml.", precioMenudeo: 115.00, precioMayoreo: 62.00 },
-  { nombre: "MIEL DE ABEJA pet red. 1,050 kg", precioMenudeo: 170.00, precioMayoreo: 95.00 },
-  { nombre: "MIEL DE ABEJA sq. 250 ml.", precioMenudeo: 70.00, precioMayoreo: 36.00 },
-  { nombre: "MIEL DE ABEJA sq. 500 ml.", precioMenudeo: 120.00, precioMayoreo: 65.00 },
-  { nombre: "MIEL DE ABEJA cubetita 1 lt.", precioMenudeo: 225.00, precioMayoreo: 125.00 },
-  { nombre: "MIEL DE ABEJA cubetita 4 lt.", precioMenudeo: 750.00, precioMayoreo: 420.00 },
-  { nombre: "MIEL DE ABEJA con cubeta 19 lt. 27k", precioMenudeo: 2600.00, precioMayoreo: 2100.00 },
-  { nombre: "MIEL DE ABEJA cubeta a cambio 27 kg", precioMenudeo: 2600.00, precioMayoreo: 2050.00 },
-  { nombre: "KARMIIELITA a granel 1 kg", precioMenudeo: 45.00, precioMayoreo: 23.00 },
-  { nombre: "KARMIIELITA toper 1/4", precioMenudeo: 25.00, precioMayoreo: 12.00 },
-  { nombre: "KARMIIELITA toper 1/2", precioMenudeo: 45.00, precioMayoreo: 22.50 },
-  { nombre: "KARMIIELITA toper 1 lt.", precioMenudeo: 80.00, precioMayoreo: 39.00 },
-  { nombre: "KARMIIELITA lacteo 250 ml.", precioMenudeo: 30.00, precioMayoreo: 14.50 },
-  { nombre: "KARMIIELITA vidrio 250 ml.", precioMenudeo: 50.00, precioMayoreo: 27.00 },
-  { nombre: "KARMIIELITA vidrio 500 ml.", precioMenudeo: 80.00, precioMayoreo: 44.00 },
-  { nombre: "KARMIIELITA vidrio 1.300 kg", precioMenudeo: 100.00, precioMayoreo: 53.00 },
-  { nombre: "KARMIIELITA pet red. 250 ml.", precioMenudeo: 30.00, precioMayoreo: 15.00 },
-  { nombre: "KARMIIELITA pet red. 480 ml.", precioMenudeo: 45.00, precioMayoreo: 24.00 },
-  { nombre: "KARMIIELITA pet red. 500 ml.", precioMenudeo: 50.00, precioMayoreo: 25.00 },
-  { nombre: "KARMIIELITA pet red 750 ml. 1.050 kg", precioMenudeo: 75.00, precioMayoreo: 37.50 },
-  { nombre: "KARMIIELITA sq 250 ml.", precioMenudeo: 35.00, precioMayoreo: 17.50 },
-  { nombre: "KARMIIELITA sq 500 ml.", precioMenudeo: 60.00, precioMayoreo: 27.50 },
-  { nombre: "KARMIIELITA cubetita 1 lt./1.400 kg", precioMenudeo: 100.00, precioMayoreo: 48.00 },
-  { nombre: "KARMIIELITA cubetita 4 lt. / 5 kg", precioMenudeo: 250.00, precioMayoreo: 140.00 },
-  { nombre: "KARMIIELITA cubeta a cambio 19 lt", precioMenudeo: 1000.00, precioMayoreo: 625.00 },
-  { nombre: "KARMIIELITA cubeta reciclada 19 lt", precioMenudeo: 1000.00, precioMayoreo: 675.00 },
-  { nombre: "KARMIIELITA cubeta amarilla 19 lt", precioMenudeo: 1000.00, precioMayoreo: 685.00 },
-  { nombre: "KARMIIELITA pet 480 ml.( rebanada panal", precioMenudeo: 80.00, precioMayoreo: 41.00 },
-  { nombre: "KARMIIELITA pet red. 1 kg ( con panalito )", precioMenudeo: 100.00, precioMayoreo: 55.00 },
-  { nombre: "POLEN a granel mixto 1 kg", precioMenudeo: 250.00, precioMayoreo: 175.00 },
-  { nombre: "POLEN lacteo mixto 170 g", precioMenudeo: 80.00, precioMayoreo: 36.00, imagen: "img/polen170.jpeg" },
-  { nombre: "POLEN pet redondo 300 g", precioMenudeo: 125.00, precioMayoreo: 62.50 },
-  { nombre: "JALEA REAL frasco 10 g", precioMenudeo: 75.00, precioMayoreo: 25.00, imagen: "img/jaleareal10.jpeg" },
-  { nombre: "JALEA REAL frasco 20 g", precioMenudeo: 120.00, precioMayoreo: 45.00, imagen: "img/jaleareal20.jpeg" },
-  { nombre: "JALEA REAL frasco 50 g", precioMenudeo: 200.00, precioMayoreo: 100.00, imagen: "img/jaleareal50.jpeg" },
-  { nombre: "JALEA REAL fresca bolsa 1 kg", precioMenudeo: 0, precioMayoreo: 1700.00 },
-  { nombre: "JALEA REAL polvo leofilizada 1 kg", precioMenudeo: 0, precioMayoreo: 3350.00 },
-  { nombre: "PROPOLEO ( greña ) ( trampa ) 1 kg", precioMenudeo: 0, precioMayoreo: 0 },
-  { nombre: "PROPOLEO extracto a granel 1 lt.", precioMenudeo: 400.00, precioMayoreo: 250.00 },
-  { nombre: "PROPOLEO extracto envase piña 1 lt.", precioMenudeo: 400.00, precioMayoreo: 250.00 },
-  { nombre: "PROPOLEO extracto gotas 20 ml.", precioMenudeo: 60.00, precioMayoreo: 27.00, imagen: "img/propoleogotas.jpeg" },
-  { nombre: "PROPOLEO spray 60 ml.", precioMenudeo: 70.00, precioMayoreo: 37.00 },
-  { nombre: "CERA DE ABEJA estampada 1 kg", precioMenudeo: 250.00, precioMayoreo: 200.00 },
-  { nombre: "CERA DE ABEJA en maqueta 1 kg", precioMenudeo: 240.00, precioMayoreo: 190.00 },
-  { nombre: "PANAL DE MIEL bastidor incluido", precioMenudeo: 400.00, precioMayoreo: 270.00 },
-  { nombre: "PANAL DE MIEL bastidor a cambio", precioMenudeo: 400.00, precioMayoreo: 260.00 },
-  { nombre: "PANAL DE MIEL bastidor en charola", precioMenudeo: 400.00, precioMayoreo: 260.00 },
-  { nombre: "PANAL DE MIEL medio bastidor", precioMenudeo: 210.00, precioMayoreo: 140.00 },
-  { nombre: "PANAL DE MIEL 1/4 del bastidor", precioMenudeo: 120.00, precioMayoreo: 70.00 },
-  { nombre: "MIEL CON PROPOLEO a granel 1 kg", precioMenudeo: 100.00, precioMayoreo: 45.00 },
-  { nombre: "MIEL CON PROPOLEO lacteo 250 ml.", precioMenudeo: 50.00, precioMayoreo: 24.00 },
-  { nombre: "MIEL CON PROPOLEO pet red. 250 ml", precioMenudeo: 50.00, precioMayoreo: 24.00, imagen: "img/mielpropoleo.jpeg" },
-  { nombre: "MIEL CON PROPOLEO toper 1/4", precioMenudeo: 45.00, precioMayoreo: 21.00 },
-  { nombre: "MIEL CON PROPOLEO toper de 1/2", precioMenudeo: 80.00, precioMayoreo: 38.00 },
-  { nombre: "MIEL CON PROPOLEO toper 1 lt.", precioMenudeo: 135.00, precioMayoreo: 68.00 },
-  { nombre: "MIEL CON PROPOLEO piña 1 lt", precioMenudeo: 140.00, precioMayoreo: 70.00 },
-  { nombre: "MIEL CON PROPOLEO cubeta 19 lt.", precioMenudeo: 1500.00, precioMayoreo: 1150.00 },
-  { nombre: "MIEL DE AGAVE a granel 1 kg", precioMenudeo: 140.00, precioMayoreo: 70.00 },
-  { nombre: "MIEL DE AGAVE sq 250 ml.", precioMenudeo: 70.00, precioMayoreo: 35.00, imagen: "img/mielagave250.jpeg" },
-  { nombre: "MIEL DE AGAVE sq 500 ml.", precioMenudeo: 120.00, precioMayoreo: 60.00, imagen: "img/mielagave500.jpeg" },
-  { nombre: "MIEL DE AGAVE piña 1 lt.", precioMenudeo: 200.00, precioMayoreo: 100.00, imagen: "img/mielagave.jpeg" },
-  { nombre: "MIEL DE AGAVE cubeta 19 lt./25 kg", precioMenudeo: 2100.00, precioMayoreo: 1700.00 },
-  { nombre: "MIEL DE MAGUEY a granel 1 kg", precioMenudeo: 85.00, precioMayoreo: 42.00 },
-  { nombre: "MIEL DE MAGUEY toper 1/4", precioMenudeo: 40.00, precioMayoreo: 19.00 },
-  { nombre: "MIEL DE MAGUEY toper 1/2", precioMenudeo: 75.00, precioMayoreo: 35.00 },
-  { nombre: "MIEL DE MAGUEY toper 1 lt", precioMenudeo: 130.00, precioMayoreo: 62.50 },
-  { nombre: "MIEL DE MAGUEY sq 250 ml.", precioMenudeo: 50.00, precioMayoreo: 25.00, imagen: "img/mielmaguey250.jpeg" },
-  { nombre: "MIEL DE MAGUEY sq 500 ml.", precioMenudeo: 80.00, precioMayoreo: 40.00 },
-  { nombre: "MIEL DE MAGUEY piña 1 lt", precioMenudeo: 130.00, precioMayoreo: 65.00 },
-  { nombre: "MIEL DE MAGUEY cubeta 19 lt.", precioMenudeo: 1400.00, precioMayoreo: 1085.00 },
-  { nombre: "PROMAGUEY a granel 1 kg", precioMenudeo: 90.00, precioMayoreo: 45.00 },
-  { nombre: "PROMAGUEY sq 250 ml.", precioMenudeo: 55.00, precioMayoreo: 26.00 },
-  { nombre: "PROMAGUEY sq 500 ml.", precioMenudeo: 90.00, precioMayoreo: 43.00 },
-  { nombre: "PROMAGUEY toper 1 lt.", precioMenudeo: 130.00, precioMayoreo: 65.00 },
-  { nombre: "PROMAGUEY piña de 1 lt.", precioMenudeo: 140.00, precioMayoreo: 70.00 },
-  { nombre: "PROMAGUEY cubeta 19 lt.", precioMenudeo: 1500.00, precioMayoreo: 1170.00 },
-  { nombre: "COLMENECTAR 500 ml.", precioMenudeo: 250.00, precioMayoreo: 120.00, imagen: "img/colmenectar.jpeg" },
-  { nombre: "CREMA jalea real 50 g", precioMenudeo: 100.00, precioMayoreo: 50.00, imagen: "img/crema.jpg" },
-  { nombre: "JARABE colmetox blanco 250 ml.", precioMenudeo: 70.00, precioMayoreo: 35.00, imagen: "img/colmetox.jpeg" },
-  { nombre: "JARABE extra forte 250 ml.", precioMenudeo: 85.00, precioMayoreo: 43.00, imagen: "img/colmetoxforte.jpeg" },
-  { nombre: "JARABE colmetox premium 250 ml.", precioMenudeo: 100.00, precioMayoreo: 65.00, imagen: "img/jarabepremium.jpeg" },
-  { nombre: "CALENDULA con propoleo spray 60 ml.", precioMenudeo: 80.00, precioMayoreo: 35.00, imagen: "img/calendula.jpg" },
-  { nombre: "TILA STRESS gotas 55 ml.", precioMenudeo: 50.00, precioMayoreo: 25.00, imagen: "img/tila.jpeg" },
-  { nombre: "CHOCHITO eucalipto sobre 60 g", precioMenudeo: 15.00, precioMayoreo: 7.50 },
-  { nombre: "CHOCHITO eucalipto mini 90g", precioMenudeo: 20.00, precioMayoreo: 10.00 },
-  { nombre: "CHOCHITOS eucalipto frasco 170g", precioMenudeo: 50.00, precioMayoreo: 20.00 },
-  { nombre: "CHOCHITOS eucalipto bolsa 1 kg", precioMenudeo: 100.00, precioMayoreo: 65.00 },
-  { nombre: "CHOCHITO propoleo sobre 60 g", precioMenudeo: 15.00, precioMayoreo: 7.50 },
-  { nombre: "CHOCHITO propoleo mini 90 g", precioMenudeo: 20.00, precioMayoreo: 10.00 },
-  { nombre: "CHOCHITOS propoleo frasco 170g", precioMenudeo: 50.00, precioMayoreo: 20.00 },
-  { nombre: "CHOCHITOS propoleo bolsa 1 kg", precioMenudeo: 100.00, precioMayoreo: 65.00 },
-  { nombre: "CHOCHITO stress sobre 60 g", precioMenudeo: 15.00, precioMayoreo: 7.50 },
-  { nombre: "CHOCHITO stress mini 90g", precioMenudeo: 20.00, precioMayoreo: 10.00 },
-  { nombre: "CHOCHITOS stress frasco 200 g", precioMenudeo: 50.00, precioMayoreo: 20.00, imagen: "img/chochoverde.jpeg" },
-  { nombre: "CHOCHITOS stress bolsa de 1 kg", precioMenudeo: 100.00, precioMayoreo: 65.00 },
-  { nombre: "CHOCHITO energetico sobre 60 g", precioMenudeo: 15.00, precioMayoreo: 7.50 },
-  { nombre: "CHOCHITO energetico mini 90g", precioMenudeo: 20.00, precioMayoreo: 10.00 },
-  { nombre: "CHOCHITOS energetico frasco 170 g", precioMenudeo: 50.00, precioMayoreo: 20.00 },
-  { nombre: "CHOCHITOS energetico bolsa 1 kg", precioMenudeo: 100.00, precioMayoreo: 65.00 },
-  { nombre: "CHOCHITO mango con chile bolsa 1 kg", precioMenudeo: 120.00, precioMayoreo: 75.00 },
-  { nombre: "CHOCHITO tamarindo con chile bolsa 1 kg", precioMenudeo: 120.00, precioMayoreo: 75.00 },
-  { nombre: "CHOCHITO mango con chile sobre 60 g", precioMenudeo: 15.00, precioMayoreo: 7.50 },
-  { nombre: "CHOCHITO tamarindo con chile sobre 60g", precioMenudeo: 15.00, precioMayoreo: 7.50 },
-  { nombre: "CHOCHITO mango con chile mini 90 g", precioMenudeo: 20.00, precioMayoreo: 10.00 },
-  { nombre: "CHOCHITO tamardido con chile mini 90 g", precioMenudeo: 20.00, precioMayoreo: 10.00 },
-  { nombre: "CHOCHITO mango con chile frasco 170 g", precioMenudeo: 60.00, precioMayoreo: 22.00 },
-  { nombre: "CHOCHITO tamarindo con chile frasco 170", precioMenudeo: 60.00, precioMayoreo: 22.00 },
-  { nombre: "PALETA almendra bolsa 25 pz", precioMenudeo: 74.00, precioMayoreo: 37.00 },
-  { nombre: "PALETA eucalipto bolsa 25 pz", precioMenudeo: 60.00, precioMayoreo: 30.00 },
-  { nombre: "PALETA propoleo bolsa 25 pz", precioMenudeo: 60.00, precioMayoreo: 30.00 },
-  { nombre: "PALETA stress bolsa 25 pz", precioMenudeo: 60.00, precioMayoreo: 30.00 },
-  { nombre: "PANALITO caramelo a granel 1 kg", precioMenudeo: 140.00, precioMayoreo: 70.00 },
-  { nombre: "PANALITO caramelo lacteo 200g", precioMenudeo: 40.00, precioMayoreo: 20.00 },
-  { nombre: "PANALITO caramelo sobre 70 g", precioMenudeo: 15.00, precioMayoreo: 7.50 },
-  { nombre: "GOMITA eucalipto sobrecito 70 g", precioMenudeo: 24.00, precioMayoreo: 12.00 },
-  { nombre: "GOMITA eucalipto frasco 200 g", precioMenudeo: 60.00, precioMayoreo: 30.00 },
-  { nombre: "GOMITA eucalipto bolsa 1 kg", precioMenudeo: 220.00, precioMayoreo: 110.00 },
-  { nombre: "GOMITA propoleo sobrecito 70 g", precioMenudeo: 24.00, precioMayoreo: 12.00 },
-  { nombre: "GOMITA propoleo envase 200g", precioMenudeo: 60.00, precioMayoreo: 30.00 },
-  { nombre: "GOMITA propoleo bolsa 1 kg", precioMenudeo: 220.00, precioMayoreo: 110.00 },
-  { nombre: "GOMITA stress sobrecito 70 g", precioMenudeo: 24.00, precioMayoreo: 12.00 },
-  { nombre: "GOMITA stress envase 200 g", precioMenudeo: 60.00, precioMayoreo: 30.00 },
-  { nombre: "GOMITA stress bolsa 1 kg", precioMenudeo: 220.00, precioMayoreo: 110.00 },
-  { nombre: "GOMITA energetica sobrecito 70 g", precioMenudeo: 24.00, precioMayoreo: 12.00 },
-  { nombre: "GOMITA energetica envase 200 g", precioMenudeo: 60.00, precioMayoreo: 30.00 },
-  { nombre: "GOMITA energetica bolsa 1 kg", precioMenudeo: 220.00, precioMayoreo: 110.00 },
-  { nombre: "PALANQUETA con miel", precioMenudeo: 160.00, precioMayoreo: 80.00 },
-  { nombre: "PALANQUETA cereales y polen", precioMenudeo: 180.00, precioMayoreo: 90.00 },
-  { nombre: "JUGO MAGUEY silvestre", precioMenudeo: 110.00, precioMayoreo: 55.00, imagen: "img/jugomaguey.jpeg" },
-  { nombre: "JUGO MAGUEY compuesto", precioMenudeo: 120.00, precioMayoreo: 60.00 },
-  { nombre: "SHAMPOO jalea real 450 ml.", precioMenudeo: 120.00, precioMayoreo: 60.00 },
-  { nombre: "SHAMPOO miel de abeja 450 ml.", precioMenudeo: 110.00, precioMayoreo: 55.00 },
-  { nombre: "SHAMPOO polen 450 ml.", precioMenudeo: 110.00, precioMayoreo: 55.00 },
-  { nombre: "NATURACTIVA energetico 250 ml", precioMenudeo: 90.00, precioMayoreo: 45.00, imagen: "img/naturactiva250.jpeg" },
-  { nombre: "NATURACTIVA energetico 500 ml", precioMenudeo: 170.00, precioMayoreo: 85.00, imagen: "img/naturactiva500.jpeg" },
-  { nombre: "POMADA veneno de abeja 100 g", precioMenudeo: 50.00, precioMayoreo: 25.00, imagen: "img/pomada.jpeg" },
-  { nombre: "ENVASE toper 1/4", precioMenudeo: 7.00, precioMayoreo: 3.50 },
-  { nombre: "ENVASE toper !/2", precioMenudeo: 10.00, precioMayoreo: 5.00 },
-  { nombre: "ENVASE toper 1 lt.", precioMenudeo: 14.00, precioMayoreo: 7.00 },
-  { nombre: "ENVASE toper 1/4 caja 500 pz", precioMenudeo: 3400.00, precioMayoreo: 1700.00 },
-  { nombre: "ENVASE toper 1/2 caja 300 pz", precioMenudeo: 2900.00, precioMayoreo: 1450.00 },
-  { nombre: "ENVASE toper 1 lt. Caja con 180 pz", precioMenudeo: 2400.00, precioMayoreo: 1200.00 },
-  { nombre: "ENVASE sq 250 ml. Con tapa y lyner", precioMenudeo: 16.00, precioMayoreo: 8.00 },
-  { nombre: "ENVASE sq 500 ml. Con tapa y lyner", precioMenudeo: 18.00, precioMayoreo: 9.00 },
-  { nombre: "ENVASE lacteo 250 ml.", precioMenudeo: 12.00, precioMayoreo: 6.00 },
-  { nombre: "ENVASE pet redondo 250 ml.", precioMenudeo: 12.40, precioMayoreo: 6.20 },
-  { nombre: "ENVASE pet redondo 480 ml.", precioMenudeo: 15.00, precioMayoreo: 7.50 },
-  { nombre: "ENVASE pet redondo 500 ml.", precioMenudeo: 15.00, precioMayoreo: 7.50 },
-  { nombre: "ENVASE pet redondo 750 ml.", precioMenudeo: 25.00, precioMayoreo: 12.50 },
-  { nombre: "ENVASE pet piña 1 lt.", precioMenudeo: 19.00, precioMayoreo: 9.50 },
-  { nombre: "ENVASE vidrio ambar 10 g", precioMenudeo: 13.00, precioMayoreo: 6.50 },
-  { nombre: "ENVASE vidrio ambar 20 g", precioMenudeo: 14.00, precioMayoreo: 7.00 },
-  { nombre: "ENVASE vidrio ambar 50 g", precioMenudeo: 15.00, precioMayoreo: 7.50 },
-  { nombre: "ENVASE vidrio 250 ml. Con tapa", precioMenudeo: 38.00, precioMayoreo: 19.00 },
-  { nombre: "ENVASE vidrio 500 ml. Con tapa", precioMenudeo: 55.00, precioMayoreo: 27.50 },
-  { nombre: "ENVASE vidrio 940 ml. Con tapa", precioMenudeo: 45.00, precioMayoreo: 22.50 },
-  { nombre: "CHAROLA chica", precioMenudeo: 9.00, precioMayoreo: 4.50 },
-  { nombre: "CHAROLA grande", precioMenudeo: 13.00, precioMayoreo: 6.50 },
-  { nombre: "VASITO cristal mini", precioMenudeo: 5.00, precioMayoreo: 2.50 }
-];
+  const productListDiv = document.getElementById('productList');
 
-
-/* --- ESTADO --- */
-let selected = [];
-let folio = parseInt(localStorage.getItem('folio') || "1");
-document.getElementById('folioSpan').textContent = folio;
-document.getElementById('dateSpan').textContent = new Date().toLocaleDateString();
-const productListDiv = document.getElementById('productList');
-const cartDiv = document.getElementById('cart');
-const searchInput = document.getElementById('search');
-const totalDiv = document.getElementById('totalDiv');
-const mayoreoNotice = document.getElementById('mayoreoNotice');
-let isMayoreo = false;
-
-/* --- RENDER PRODUCTOS --- */
-function renderProducts(filter=''){
-  productListDiv.innerHTML = '';
-  const list = products.filter(p => p.nombre.toLowerCase().includes(filter.toLowerCase()));
-  if(list.length===0){ productListDiv.innerHTML = '<div style="padding:10px;color:var(--muted)">No se encontraron productos.</div>'; return; }
-  list.forEach((p,i)=>{
-    const row = document.createElement('div');
-    row.className = 'product-item';
-    row.innerHTML = `
-  <div style="display:flex;justify-content:space-between;align-items:center">
-
-    <!-- Contenedor de la imagen clicable -->
-    <div class="product-meta">
-      <div class="product-image-wrapper">
-  <img 
-    src="${p.imagen || 'img/default.jpg'}"
-    alt="${p.nombre}"
-    style="width:60px;height:60px;object-fit:contain;border-radius:8px;border:1px solid #eee;background:#fff;margin-bottom:6px;cursor:pointer;"
-    onclick="openModal('${p.imagen || 'img/default.jpg'}')"
-  />
-</div>
-
-      <div style="font-weight:700">${p.nombre}</div>
-      <div class="small menudeo_display">
-        Menudeo: <span class="menudeo_price">${money(p.precioMenudeo)}</span>
-      </div>
-      <div class="small mayoreo_display" style="display:none">
-        Mayoreo: <span class="mayoreo_price">${money(p.precioMayoreo)}</span>
-      </div>
-    </div>
-
-    <!-- Contenedor de cantidad y botón -->
-    <div style="display:flex;align-items:center;gap:8px">
-      <input 
-        type="number"
-        min="1"
-        value="1"
-        id="qty_${i}"
-        style="width:60px;padding:5px;border-radius:6px;border:1px solid #eee"
-      />
-      <button onclick="addProduct(${i})">Agregar</button>
-    </div>
-
-  </div>
-`;
-
-
-
-    productListDiv.appendChild(row);
-  });
-}
-renderProducts();
-
-/* --- FUNCIONES DE CARRITO --- */
-function addProduct(index){
-  const qtyEl = document.getElementById(`qty_${index}`);
-  let qty = parseInt(qtyEl.value) || 1;
-  const prod = products[index];
-  const exist = selected.find(s => s.nombre === prod.nombre);
-  if(exist){ exist.qty += qty; } else { selected.push({ nombre: prod.nombre, qty: qty }); }
-  updateCart();
-}
-
-function updateCart(){
-  cartDiv.innerHTML = '';
-  let total = 0;
-  selected.forEach((item, idx)=>{
-    const prod = products.find(p => p.nombre === item.nombre);
-    const unitPrice = isMayoreo ? prod.precioMayoreo : prod.precioMenudeo;
-    const subtotal = unitPrice * item.qty;
-    total += subtotal;
-    const div = document.createElement('div');
-    div.className = 'cart-item';
-    div.innerHTML = `
-      <div style="max-width:70%">
-        <div style="font-weight:700">${item.nombre}</div>
-        <div class="small">${item.qty} x ${money(unitPrice)} <strong>= ${money(subtotal)}</strong></div>
-      </div>
-      <div style="text-align:right">
-        <div class="qty-controls">
-          <button onclick="changeQty(${idx},-1)">-</button>
-          <button onclick="changeQty(${idx},1)">+</button>
-          <button onclick="removeProduct(${idx})" style="background:#ffdede;border:1px solid #f6b0b0;padding:6px;border-radius:6px;margin-left:6px">X</button>
-        </div>
-      </div>
-    `;
-    cartDiv.appendChild(div);
-  });
-  document.querySelectorAll('.menudeo_display').forEach(el => el.style.display = isMayoreo?'none':'block');
-  document.querySelectorAll('.mayoreo_display').forEach(el => el.style.display = isMayoreo?'block':'none');
-  mayoreoNotice.style.display = isMayoreo?'block':'none';
-  totalDiv.textContent = `Total: ${money(total)}`;
-}
-
-window.changeQty = function(index, delta){
-  selected[index].qty += delta;
-  if(selected[index].qty <= 0) selected.splice(index,1);
-  updateCart();
-}
-window.removeProduct = function(index){
-  selected.splice(index,1);
-  updateCart();
-}
-
-document.getElementById('clearSearch').addEventListener('click', ()=>{ searchInput.value=''; renderProducts(''); });
-searchInput.addEventListener('input', ()=> renderProducts(searchInput.value));
-document.getElementById('clearCartBtn').addEventListener('click', ()=>{ if(confirm('Vaciar carrito?')){ selected=[]; updateCart(); }});
-
-/* --- CÓDIGO DE MAYOREO --- */
-const validCode = "2202";
-document.getElementById('checkCodeBtn').addEventListener('click', ()=> {
-  const code = document.getElementById('clientCode').value.trim();
-  if(code === validCode){
-    isMayoreo = true;
-    alert('Código válido. Se aplicará precio de MAYOREO.');
-  } else {
-    isMayoreo = false;
-    if(code !== '') alert('Código inválido. Se aplicará precio de MENUDEO.');
+  function money(value) {
+    return '$' + value.toFixed(2);
   }
-  updateCart();
-});
 
-/* --- ENVÍO POR WHATSAPP --- */
-document.getElementById('sendWhats').addEventListener('click', ()=> {
-  if(selected.length === 0){ alert('El carrito está vacío.'); return; }
+  function renderProducts(filter=''){
+    productListDiv.innerHTML = '';
+    const list = products.filter(p => p.nombre.toLowerCase().includes(filter.toLowerCase()));
+    if(list.length === 0){
+      productListDiv.innerHTML = '<div style="padding:10px;color:#888">No se encontraron productos.</div>';
+      return;
+    }
 
-  const name = document.getElementById('clientName').value || "Cliente";
-  const address = document.getElementById('clientAddress').value || "";
-  const phone = "5213318553688"; // <-- reemplaza TU_NUMERO por tu WhatsApp sin signos
+    list.forEach((p,i) => {
+      const row = document.createElement('div');
+      row.className = 'product-item';
+      row.innerHTML = `
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div class="product-meta">
+            <img src="${p.imagen}" alt="${p.nombre}" onclick="openModal('${p.imagen}')"/>
+            <div>
+              <div style="font-weight:700">${p.nombre}</div>
+              <div class="small menudeo_display">Menudeo: <span>${money(p.precioMenudeo)}</span></div>
+              <div class="small mayoreo_display" style="display:none">Mayoreo: <span>${money(p.precioMayoreo)}</span></div>
+            </div>
+          </div>
+          <div class="product-actions">
+            <input type="number" min="1" value="1" id="qty_${i}"/>
+            <button onclick="addProduct(${i})">Agregar</button>
+          </div>
+        </div>
+      `;
+      productListDiv.appendChild(row);
+    });
+  }
 
-  let totalProducts = selected.reduce((sum,item)=>sum+item.qty,0);
-  let tipoCompra = isMayoreo ? "MAYOREO" : "MENUDEO";
-
-  let message = `*Pedido La Colmena*\nCliente: ${name}\n${address? "Domicilio: "+address+"\n" : ""}`;
-  message += `Tipo de compra: ${tipoCompra}\nCantidad total de productos: ${totalProducts}\n\n`;
-
-  selected.forEach(item => {
-    const prod = products.find(p => p.nombre === item.nombre);
-    const unitPrice = isMayoreo ? prod.precioMayoreo : prod.precioMenudeo;
-    message += `${item.qty} x ${prod.nombre} = ${money(unitPrice*item.qty)}\n`;
-  });
-
-  message += `\n*Total:* ${totalDiv.textContent.replace('Total: ','')}`;
-
-  const url = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
-  window.open(url, '_blank');
-});
-</script>
-<!-- Modal para ampliar la imagen -->
-<div id="imageModal" style="
-  display:none;
-  position:fixed;
-  top:0;
-  left:0;
-  width:100%;
-  height:100%;
-  background: rgba(0,0,0,0.8);
-  justify-content:center;
-  align-items:center;
-  z-index:1000;
-  cursor:pointer;
-">
-  <img id="modalImg" src="" style="max-width:90%; max-height:90%; border-radius:10px; box-shadow:0 0 15px #000;">
-</div>
-
-<script>
   function openModal(src){
     const modal = document.getElementById('imageModal');
     const modalImg = document.getElementById('modalImg');
@@ -474,6 +182,15 @@ document.getElementById('sendWhats').addEventListener('click', ()=> {
   document.getElementById('imageModal').onclick = function() {
     this.style.display = 'none';
   }
+
+  function addProduct(i){
+    const qty = document.getElementById(`qty_${i}`).value;
+    alert(`Se agregó ${qty} de ${products[i].nombre}`);
+  }
+
+  // Render inicial
+  renderProducts();
 </script>
+
 </body>
 </html>
